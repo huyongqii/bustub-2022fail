@@ -52,14 +52,20 @@ class BPlusTree {
 
   auto Split(BPlusTreePage *page) -> BPlusTreePage *;
 
-  auto InsertToParent(BPlusTreePage* old_page, BPlusTreePage* split_page, const KeyType &split_key) -> void;
+  auto InsertToParent(BPlusTreePage *old_page, BPlusTreePage *split_page, const KeyType &split_key) -> void;
 
   // Remove a key and its value from this B+ tree.
   void Remove(const KeyType &key, Transaction *transaction = nullptr);
 
-  auto ResdistributeOrMerge(BPlusTreePage* remove_page) -> void;
+  auto ResdistributeOrMerge(BPlusTreePage *remove_page) -> void;
 
-  auto DistributeLeft(BPlusTreePage* distribute_page, BPlusTreePage* remove_page, BPlusTreePage* parent_page, int index) -> void;
+  auto DistributeLeft(BPlusTreePage *distribute_page, BPlusTreePage *remove_page, InternalPage *parent_page, int index)
+      -> void;
+
+  auto DistributeRight(BPlusTreePage *distribute_page, BPlusTreePage *reomove, InternalPage *parent_page, int index)
+      -> void;
+
+  auto Merge(BPlusTreePage *left_page, BPlusTreePage *merge_page, InternalPage *parent_page, int index) -> void;
 
   // return the value associated with a given key
   auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction = nullptr) -> bool;

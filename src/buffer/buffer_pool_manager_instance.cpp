@@ -12,7 +12,6 @@
 
 #include "buffer/buffer_pool_manager_instance.h"
 #include <cassert>
-#include <mutex>
 
 #include "common/config.h"
 #include "common/exception.h"
@@ -41,14 +40,14 @@ BufferPoolManagerInstance::~BufferPoolManagerInstance() {
   delete replacer_;
 }
 
-auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * { 
+auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * {
   std::scoped_lock<std::mutex> lock(latch_);
   frame_id_t frame_id = -1;
-  if(!free_list_.empty()) {
+  if (!free_list_.empty()) {
     frame_id = *free_list_.begin();
     free_list_.erase(free_list_.begin());
-  } else if(replacer_->Evict(&frame_id)) {
-    if(pages_[frame_id].IsDirty()) {
+  } else if (replacer_->Evict(&frame_id)) {
+    if (pages_[frame_id].IsDirty()) {
       disk_manager_->WritePage(pages_[frame_id].GetPageId(), pages_[frame_id].GetData());
     }
     page_table_->Remove(pages_[frame_id].GetPageId());
@@ -67,21 +66,21 @@ auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * {
   return &pages_[frame_id];
 }
 
-auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * { 
+auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
   assert(page_id != INVALID_PAGE_ID);
   frame_id_t frame_id = -1;
   std::scoped_lock<std::mutex> lock(latch_);
-  if(page_table_->Find(page_id, frame_id)) {
+  if (page_table_->Find(page_id, frame_id)) {
     replacer_->RecordAccess(frame_id);
     replacer_->SetEvictable(frame_id, false);
     pages_[frame_id].pin_count_++;
     return &pages_[frame_id];
   }
-  if(!free_list_.empty()) {
+  if (!free_list_.empty()) {
     frame_id = free_list_.front();
     free_list_.pop_front();
-  } else if(replacer_->Evict(&frame_id)) {
-    if(pages_[frame_id].IsDirty()) {
+  } else if (replacer_->Evict(&frame_id)) {
+    if (pages_[frame_id].IsDirty()) {
       disk_manager_->WritePage(pages_[frame_id].GetPageId(), pages_[frame_id].GetData());
     }
     page_table_->Remove(pages_[frame_id].GetPageId());
@@ -96,19 +95,19 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
   pages_[frame_id].pin_count_ = 1;
   replacer_->RecordAccess(frame_id);
   replacer_->SetEvictable(frame_id, false);
- 
+
   disk_manager_->ReadPage(page_id, pages_[frame_id].GetData());
-  return &pages_[frame_id]; 
+  return &pages_[frame_id];
 }
 
-auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> bool { 
+auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> bool {
   assert(page_id != INVALID_PAGE_ID);
   std::scoped_lock<std::mutex> lock(latch_);
   frame_id_t frame_id = -1;
-  if(!page_table_->Find(page_id, frame_id) || pages_[frame_id].GetPinCount() == 0) {
+  if (!page_table_->Find(page_id, frame_id) || pages_[frame_id].GetPinCount() == 0) {
     return false;
   }
-  if(--pages_[frame_id].pin_count_ == 0) {
+  if (--pages_[frame_id].pin_count_ == 0) {
     replacer_->SetEvictable(frame_id, true);
   }
 
@@ -120,7 +119,7 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
   frame_id_t frame_id = -1;
   page_table_->Find(page_id, frame_id);
-  if(frame_id == -1) {
+  if (frame_id == -1) {
     return false;
   }
   disk_manager_->WritePage(page_id, pages_[frame_id].GetData());
@@ -131,10 +130,10 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
 
 void BufferPoolManagerInstance::FlushAllPgsImp() {
   std::scoped_lock<std::mutex> lock(latch_);
-  for(page_id_t i = 0; i < next_page_id_; ++i) {
+  for (page_id_t i = 0; i < next_page_id_; ++i) {
     frame_id_t frame_id = -1;
     page_table_->Find(i, frame_id);
-    if(frame_id != -1){
+    if (frame_id != -1) {
       FlushPgImp(i);
     }
   }
@@ -143,11 +142,11 @@ void BufferPoolManagerInstance::FlushAllPgsImp() {
 auto BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
   frame_id_t frame_id = -1;
-  if(page_table_->Find(page_id, frame_id)) {
-    if(pages_[frame_id].GetPinCount() > 0) {
+  if (page_table_->Find(page_id, frame_id)) {
+    if (pages_[frame_id].GetPinCount() > 0) {
       return false;
     }
-    if(pages_[frame_id].IsDirty()) {
+    if (pages_[frame_id].IsDirty()) {
       disk_manager_->WritePage(pages_[frame_id].GetPageId(), pages_[frame_id].GetData());
       pages_[frame_id].is_dirty_ = false;
     }
@@ -156,7 +155,7 @@ auto BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) -> bool {
     replacer_->Remove(frame_id);
     free_list_.push_back(frame_id);
     DeallocatePage(page_id);
-    return true;  
+    return true;
   }
   return true;
 }

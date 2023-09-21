@@ -82,7 +82,7 @@ auto HASH_TABLE_BUCKET_TYPE::IsEmpty() -> bool {
 }
 
 template <typename KeyType, typename ValueType, typename KeyComparator>
-auto HASH_TABLE_BUCKET_TYPE::GetArrayCopy() -> MappingType*{
+auto HASH_TABLE_BUCKET_TYPE::GetArrayCopy() -> MappingType * {
   uint32_t num = NumReadable();
   auto *copy = new MappingType[num];
   for (uint32_t i = 0, index = 0; i < BUCKET_ARRAY_SIZE; i++) {

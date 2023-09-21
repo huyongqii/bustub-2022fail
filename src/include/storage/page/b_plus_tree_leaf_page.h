@@ -49,12 +49,15 @@ class BPlusTreeLeafPage : public BPlusTreePage {
   auto GetNextPageId() const -> page_id_t;
   void SetNextPageId(page_id_t next_page_id);
   auto KeyAt(int index) const -> KeyType;
+  auto ValueAt(int index) const -> ValueType;
+  auto GetItem(int index) const -> const MappingType &;
   auto KeyIndex(const KeyType &key, const KeyComparator &comparator) const -> int;
-  auto LookUp(const KeyType &key, ValueType *value ,const KeyComparator &comparator) const -> bool;
+  auto LookUp(const KeyType &key, ValueType *value, const KeyComparator &comparator) const -> bool;
   auto Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) -> int;
   auto MoveHalfTo(BPlusTreeLeafPage *new_leaf) -> void;
-  auto CopyData(MappingType * items, int size) -> void;
-  auto Remove(const KeyType& key, const KeyComparator& comparator) -> bool;
+  auto CopyData(MappingType *items, int size) -> void;
+  auto Remove(const KeyType &key, const KeyComparator &comparator) -> bool;
+  auto MoveAllTo(BPlusTreeLeafPage *distribute_page) -> void;
 
  private:
   page_id_t next_page_id_;

@@ -132,7 +132,7 @@ class HashTableBucketPage {
    */
   auto IsEmpty() -> bool;
 
-  auto GetArrayCopy() -> MappingType*;
+  auto GetArrayCopy() -> MappingType *;
 
   void Reset();
 

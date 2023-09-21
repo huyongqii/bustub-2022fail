@@ -17,7 +17,6 @@
 #include <functional>
 #include <list>
 #include <memory>
-#include <mutex>
 #include <utility>
 #include <vector>
 
@@ -31,8 +30,8 @@ namespace bustub {
 template <typename K, typename V>
 ExtendibleHashTable<K, V>::ExtendibleHashTable(size_t bucket_size)
     : global_depth_(0), bucket_size_(bucket_size), num_buckets_(1) {
-      dir_.emplace_back(std::make_shared<Bucket>(bucket_size));
-    }
+  dir_.emplace_back(std::make_shared<Bucket>(bucket_size));
+}
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::IndexOf(const K &key) -> size_t {
@@ -88,17 +87,17 @@ auto ExtendibleHashTable<K, V>::Remove(const K &key) -> bool {
 template <typename K, typename V>
 void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
   std::scoped_lock<std::mutex> lock(latch_);
-  while(true) {
+  while (true) {
     size_t idx = IndexOf(key);
-    bool flag = dir_[idx]->Insert(key,value);
-    if(flag) {
+    bool flag = dir_[idx]->Insert(key, value);
+    if (flag) {
       break;
     }
-    if(GetGlobalDepthInternal() == GetLocalDepthInternal(idx)) {
+    if (GetGlobalDepthInternal() == GetLocalDepthInternal(idx)) {
       global_depth_++;
       size_t dir_size = dir_.size();
       // extend dir to dir * 2
-      for(size_t i = 0; i < dir_size; i++) {
+      for (size_t i = 0; i < dir_size; i++) {
         dir_.emplace_back(dir_[i]);
       }
     } else {
@@ -108,19 +107,19 @@ void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
 }
 
 template <typename K, typename V>
-auto ExtendibleHashTable<K, V>::RedistributeBucket(std::shared_ptr<Bucket> bucket)->void {
+auto ExtendibleHashTable<K, V>::RedistributeBucket(std::shared_ptr<Bucket> bucket) -> void {
   bucket->IncrementDepth();
   int depth = bucket->GetDepth();
   num_buckets_++;
-  auto list  = &bucket->GetItems();
+  auto list = &bucket->GetItems();
   // create a new and image bucket
   std::shared_ptr<Bucket> image_bucket(new Bucket(bucket_size_, depth));
   auto pre = std::hash<K>()(list->begin()->first) & ((1 << (depth - 1)) - 1);
-  for(auto it = list->begin(); it != list->end();) {
+  for (auto it = list->begin(); it != list->end();) {
     // compute per element index
     auto cur = std::hash<K>()(it->first) & ((1 << depth) - 1);
     // it's same
-    if(cur == pre) {
+    if (cur == pre) {
       ++it;
     } else {
       // insert key/value to image bucket
@@ -129,8 +128,8 @@ auto ExtendibleHashTable<K, V>::RedistributeBucket(std::shared_ptr<Bucket> bucke
     }
   }
   // have a better way that update above loop
-  for(size_t i = 0; i < dir_.size(); i++) {
-    if((i & ((1 << (depth - 1)) - 1)) == pre && (i & (1 << depth) - 1) != pre) {
+  for (size_t i = 0; i < dir_.size(); i++) {
+    if ((i & ((1 << (depth - 1)) - 1)) == pre && (i & (1 << depth) - 1) != pre) {
       dir_[i] = image_bucket;
     }
   }
@@ -144,8 +143,8 @@ ExtendibleHashTable<K, V>::Bucket::Bucket(size_t array_size, int depth) : size_(
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Find(const K &key, V &value) -> bool {
-  for(auto &[k,v] : list_) {
-    if(k == key){
+  for (auto &[k, v] : list_) {
+    if (k == key) {
       value = v;
       return true;
     }
@@ -155,8 +154,8 @@ auto ExtendibleHashTable<K, V>::Bucket::Find(const K &key, V &value) -> bool {
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Remove(const K &key) -> bool {
-  for(auto it = list_.begin(); it != list_.end();) {
-    if(it->first == key) {
+  for (auto it = list_.begin(); it != list_.end();) {
+    if (it->first == key) {
       list_.erase(it);
       return true;
     }
@@ -167,13 +166,13 @@ auto ExtendibleHashTable<K, V>::Bucket::Remove(const K &key) -> bool {
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Insert(const K &key, const V &value) -> bool {
-  for(auto &[k,v] : list_) {
-    if(k == key) {
+  for (auto &[k, v] : list_) {
+    if (k == key) {
       v = value;
       return true;
     }
   }
-  if(IsFull()) {
+  if (IsFull()) {
     return false;
   }
   list_.emplace_back(key, value);
