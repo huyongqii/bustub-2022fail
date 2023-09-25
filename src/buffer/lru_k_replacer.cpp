@@ -13,6 +13,7 @@
 #include "buffer/lru_k_replacer.h"
 #include <exception>
 #include "common/config.h"
+#include "common/logger.h"
 
 namespace bustub {
 
@@ -78,6 +79,13 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
 
 auto LRUKReplacer::Size() -> size_t {
   std::scoped_lock<std::mutex> lock(latch_);
+  int count = 0;
+  for (const auto &[k, v] : mp_) {
+    if (v.enable_evit_) {
+      count++;
+    }
+  }
+  LOG_INFO("count = %d, curr_size_ = %d", count, static_cast<int>(curr_size_));
   return curr_size_;
 }
 

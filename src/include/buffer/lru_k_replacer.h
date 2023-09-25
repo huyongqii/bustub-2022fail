@@ -146,7 +146,7 @@ class LRUKReplacer {
   size_t k_;
   std::mutex latch_;
   struct Frame {
-    bool enable_evit_ = false;
+    bool enable_evit_{false};
     std::queue<size_t> time_;
   };
   std::unordered_map<frame_id_t, Frame> mp_;
