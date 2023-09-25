@@ -76,7 +76,10 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
   curr_size_--;
 }
 
-auto LRUKReplacer::Size() -> size_t { return curr_size_; }
+auto LRUKReplacer::Size() -> size_t {
+  std::scoped_lock<std::mutex> lock(latch_);
+  return curr_size_;
+}
 
 auto LRUKReplacer::Judge(frame_id_t s, frame_id_t t) -> bool {
   if (mp_[s].time_.size() < k_ && mp_[t].time_.size() == k_) {

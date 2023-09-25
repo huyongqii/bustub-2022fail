@@ -140,7 +140,7 @@ auto BPLUSTREE_TYPE::Split(BPlusTreePage *page) -> BPlusTreePage * {
   } else {  // Internal Page
     auto *internal_page = reinterpret_cast<InternalPage *>(page);
     auto *new_internal = reinterpret_cast<InternalPage *>(new_page->GetData());
-    new_internal->Init(page_id, internal_page->GetParentPageId(), leaf_max_size_);
+    new_internal->Init(page_id, internal_page->GetParentPageId(), internal_max_size_);
     internal_page->MoveHalfTo(new_internal, buffer_pool_manager_);
   }
   return reinterpret_cast<BPlusTreePage *>(new_page->GetData());

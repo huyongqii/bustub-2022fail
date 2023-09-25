@@ -105,7 +105,7 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyData(MappingType *items, int size, Buff
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(page_id_t new_page_id, const KeyType &key, page_id_t old_page_id)
     -> void {
-  int index = ValueAt(old_page_id) + 1;
+  int index = ValueIndex(old_page_id) + 1;
   std::move_backward(array_ + index, array_ + GetSize(), array_ + GetSize() + 1);
   IncreaseSize(1);
   array_[index].first = key;
@@ -148,6 +148,7 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) -> void {
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *distribute_page,
                                                BufferPoolManager *buffer_pool_manager) -> void {
+  // why not array_ +
   CopyData(array_ + 1, GetSize(), buffer_pool_manager);
   SetSize(0);
 }

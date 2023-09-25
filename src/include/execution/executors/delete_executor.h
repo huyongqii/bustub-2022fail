@@ -16,9 +16,11 @@
 #include <utility>
 #include <vector>
 
+#include "catalog/catalog.h"
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
 #include "execution/plans/delete_plan.h"
+#include "storage/index/index.h"
 #include "storage/table/tuple.h"
 
 namespace bustub {
@@ -60,5 +62,9 @@ class DeleteExecutor : public AbstractExecutor {
   const DeletePlanNode *plan_;
   /** The child executor from which RIDs for deleted tuples are pulled */
   std::unique_ptr<AbstractExecutor> child_executor_;
+
+  const TableInfo *table_info_;
+  std::vector<IndexInfo *> table_indexs_;
+  bool is_end_{false};
 };
 }  // namespace bustub
