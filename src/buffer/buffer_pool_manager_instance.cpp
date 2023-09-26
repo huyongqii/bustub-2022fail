@@ -126,9 +126,8 @@ auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> 
   if (--pages_[frame_id].pin_count_ == 0) {
     replacer_->SetEvictable(frame_id, true);
   }
-  if (is_dirty) {
-    pages_[frame_id].is_dirty_ = is_dirty;
-  }
+
+  pages_[frame_id].is_dirty_ = is_dirty;
 
   return true;
 }
@@ -145,7 +144,7 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
 
   disk_manager_->WritePage(page_id, pages_[frame_id].GetData());
   pages_[frame_id].is_dirty_ = false;
-  pages_[frame_id].pin_count_ = 0;
+  // pages_[frame_id].pin_count_ = 0;
   return true;
 }
 
