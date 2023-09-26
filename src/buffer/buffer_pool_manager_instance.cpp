@@ -65,7 +65,7 @@ auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * {
   pages_[frame_id].ResetMemory();
   pages_[frame_id].page_id_ = *page_id;
   pages_[frame_id].pin_count_ = 1;
-  // pages_[frame_id].is_dirty_ = false;
+  pages_[frame_id].is_dirty_ = false;
 
   replacer_->RecordAccess(frame_id);
   replacer_->SetEvictable(frame_id, false);
@@ -105,7 +105,7 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
 
   pages_[frame_id].ResetMemory();
   pages_[frame_id].page_id_ = page_id;
-  // pages_[frame_id].is_dirty_ = false;
+  pages_[frame_id].is_dirty_ = false;
   pages_[frame_id].pin_count_ = 1;
 
   replacer_->RecordAccess(frame_id);
