@@ -117,18 +117,20 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
 
 auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
-  LOG_INFO("UnpinPgImp");
+  LOG_INFO("UnpinPgImp, id_dirty :%d", is_dirty);
 
   frame_id_t frame_id = -1;
-  if (!page_table_->Find(page_id, frame_id) || pages_[frame_id].GetPinCount() == 0) {
+  if (!page_table_->Find(page_id, frame_id) || pages_[frame_id].GetPinCount() <= 0) {
     return false;
   }
 
   if (--pages_[frame_id].pin_count_ == 0) {
     replacer_->SetEvictable(frame_id, true);
   }
-
-  pages_[frame_id].is_dirty_ = is_dirty;
+  LOG_INFO("pages_[frame_id].is_dirty_ : %d, id_dirty :%d", pages_[frame_id].is_dirty_, is_dirty);
+  if (is_dirty) {
+    pages_[frame_id].is_dirty_ = is_dirty;
+  }
 
   return true;
 }
@@ -144,7 +146,7 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
   }
 
   disk_manager_->WritePage(page_id, pages_[frame_id].GetData());
-  pages_[frame_id].is_dirty_ = false;
+  // pages_[frame_id].is_dirty_ = false;
   // pages_[frame_id].pin_count_ = 0;
   return true;
 }

@@ -145,4 +145,39 @@ TEST(BufferPoolManagerInstanceTest, SampleTest) {
   delete disk_manager;
 }
 
+TEST(BufferPoolManagerInstanceTest, SampleTest2) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 10;
+  const size_t k = 5;
+
+  auto *disk_manager = new DiskManager(db_name);
+  auto *bpm = new BufferPoolManagerInstance(buffer_pool_size, disk_manager, k);
+
+  page_id_t page_id_temp;
+  auto *page0 = bpm->NewPage(&page_id_temp);
+
+  // Scenario: The buffer pool is empty. We should be able to create a new page.
+  ASSERT_NE(nullptr, page0);
+  EXPECT_EQ(0, page_id_temp);
+
+  // Scenario: Once we have a page, we should be able to read and write content.
+  snprintf(page0->GetData(), BUSTUB_PAGE_SIZE, "Hello");
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+
+  bpm->UnpinPage(page_id_temp, true);
+
+  auto *page = bpm->FetchPage(page_id_temp);
+  bpm->UnpinPage(page_id_temp, true);
+
+  page = bpm->FetchPage(page_id_temp);
+  EXPECT_EQ(1, page->IsDirty());
+
+  // Shutdown the disk manager and remove the temporary file we created.
+  disk_manager->ShutDown();
+  remove("test.db");
+
+  delete bpm;
+  delete disk_manager;
+}
+
 }  // namespace bustub
