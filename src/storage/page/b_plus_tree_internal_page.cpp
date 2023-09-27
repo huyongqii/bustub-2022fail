@@ -69,8 +69,9 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex(int value) -> int {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::LookUp(const KeyType &key, const KeyComparator &comparator) const -> ValueType {
-  auto taeget = std::lower_bound(array_ + 1, array_ + GetSize(), key,
-                                 [&comparator](const auto &pair1, auto key) { return comparator(pair1.first, key); });
+  auto taeget = std::lower_bound(array_ + 1, array_ + GetSize(), key, [&comparator](const auto &pair1, auto key) {
+    return comparator(pair1.first, key) < 0;
+  });
   // why?
   if (taeget == array_ + GetSize()) {
     return ValueAt(GetSize() - 1);

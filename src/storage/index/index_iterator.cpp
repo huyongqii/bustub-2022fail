@@ -35,9 +35,9 @@ auto INDEXITERATOR_TYPE::operator*() -> const MappingType & {
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
   std::cout << "Get next operator." << std::endl;
-  if (leaf_->GetNextPageId() != INVALID_PAGE_ID && index_ == leaf_->GetSize() - 1) {
+  if (leaf_->GetNextPageId() != INVALID_PAGE_ID && index_ == (leaf_->GetSize() - 1)) {
     page_id_t page_id = leaf_->GetNextPageId();
-    bpm_->UnpinPage(page_id, false);
+    bpm_->UnpinPage(leaf_->GetPageId(), false);
     Page *page = bpm_->FetchPage(page_id);
     leaf_ = reinterpret_cast<LeafPage *>(page->GetData());
     index_ = 0;

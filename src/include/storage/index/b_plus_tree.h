@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rwlatch.h"
 #include "concurrency/transaction.h"
 #include "storage/index/index_iterator.h"
 #include "storage/page/b_plus_tree_internal_page.h"
@@ -45,7 +46,7 @@ class BPlusTree {
   // Returns true if this B+ tree has no keys and values.
   auto IsEmpty() const -> bool;
 
-  auto FindLeaf(const KeyType &key) const -> Page *;
+  auto FindLeaf(const KeyType &key) -> Page *;
 
   // Insert a key-value pair into this B+ tree.
   auto Insert(const KeyType &key, const ValueType &value, Transaction *transaction = nullptr) -> bool;
@@ -62,16 +63,18 @@ class BPlusTree {
   auto DistributeLeft(BPlusTreePage *distribute_page, BPlusTreePage *remove_page, InternalPage *parent_page, int index)
       -> void;
 
-  auto DistributeRight(BPlusTreePage *distribute_page, BPlusTreePage *reomove, InternalPage *parent_page, int index)
+  auto DistributeRight(BPlusTreePage *distribute_page, BPlusTreePage *merge_page, InternalPage *parent_page, int index)
       -> void;
 
-  auto Merge(BPlusTreePage *left_page, BPlusTreePage *merge_page, InternalPage *parent_page, int index) -> void;
+  auto Merge(BPlusTreePage *left_page, BPlusTreePage *remove_page, InternalPage *parent_page, int index) -> void;
 
   // return the value associated with a given key
   auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction = nullptr) -> bool;
 
   // return the page id of the root node
   auto GetRootPageId() -> page_id_t;
+
+  auto Releaselatch(Transaction *transaction) -> void;
 
   // index iterator
   auto Begin() -> INDEXITERATOR_TYPE;
@@ -105,6 +108,7 @@ class BPlusTree {
   KeyComparator comparator_;
   int leaf_max_size_;
   int internal_max_size_;
+  ReaderWriterLatch root_page_id_latch_;
 };
 
 }  // namespace bustub
