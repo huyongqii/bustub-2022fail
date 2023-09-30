@@ -93,20 +93,23 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *new_inter
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyData(MappingType *items, int size, BufferPoolManager *buffer_pool_manager)
     -> void {
-  std::copy(items, items + size, array_);
-  IncreaseSize(size);
+  std::cout << "B_PLUS_TREE_INTERNAL_PAGE_TYPE GetSize(): " << GetSize() << std::endl;
+  std::copy(items, items + size, array_ + GetSize());
   for (int i = 0; i < size; i++) {
-    Page *page = buffer_pool_manager->FetchPage(ValueAt(i));
+    Page *page = buffer_pool_manager->FetchPage(ValueAt(i + GetSize()));
     auto *internal_page = reinterpret_cast<BPlusTreeInternalPage *>(page->GetData());
     internal_page->SetParentPageId(GetPageId());
     buffer_pool_manager->UnpinPage(page->GetPageId(), true);
   }
+  IncreaseSize(size);
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(page_id_t new_page_id, const KeyType &key, page_id_t old_page_id)
     -> void {
   int index = ValueIndex(old_page_id) + 1;
+
+  std ::cout << "InsertNodeAfter ValueIndex(old_page_id) + 1 = " << index << std::endl;
   std::move_backward(array_ + index, array_ + GetSize(), array_ + GetSize() + 1);
   IncreaseSize(1);
   array_[index].first = key;
@@ -150,8 +153,17 @@ INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *distribute_page,
                                                BufferPoolManager *buffer_pool_manager) -> void {
   // why not array_ +
-  CopyData(array_ + 1, GetSize(), buffer_pool_manager);
+  distribute_page->CopyData(array_, GetSize(), buffer_pool_manager);
   SetSize(0);
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::PrintAllKV() -> void {
+  std::cout << "PrintAllKV" << std::endl;
+  for (int i = 0; i < GetSize(); i++) {
+    std::cout << "key = " << array_[i].first << " "
+              << "value = " << array_[i].second << std::endl;
+  }
 }
 
 // valuetype for internalNode should be page id_t

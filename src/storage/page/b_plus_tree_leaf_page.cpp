@@ -126,7 +126,7 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::Remove(const KeyType &key, const KeyComparator 
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *distribute_page) -> void {
-  CopyData(array_, GetSize());
+  distribute_page->CopyData(array_, GetSize());
   distribute_page->SetNextPageId(GetNextPageId());
   SetSize(0);
 }

@@ -52,6 +52,7 @@ class BPlusTreeInternalPage : public BPlusTreePage {
   auto InsertEnd(const KeyType &key, const ValueType &value, BufferPoolManager *buffer_pool_manager) -> void;
   auto Remove(int index) -> void;
   auto MoveAllTo(BPlusTreeInternalPage *distribute_page, BufferPoolManager *buffer_pool_manager) -> void;
+  auto PrintAllKV() -> void;
 
  private:
   // Flexible array member for page data.
