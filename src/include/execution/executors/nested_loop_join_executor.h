@@ -12,8 +12,10 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
@@ -52,9 +54,17 @@ class NestedLoopJoinExecutor : public AbstractExecutor {
   /** @return The output schema for the insert */
   auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
 
+  auto Match(bustub::Tuple *left_tuple, bustub::Tuple *right_tuple) const -> bool;
+
  private:
   /** The NestedLoopJoin plan node to be executed. */
   const NestedLoopJoinPlanNode *plan_;
+
+  std::unique_ptr<AbstractExecutor> left_executor_;
+  std::unique_ptr<AbstractExecutor> right_executor_;
+  std::vector<Tuple> right_tuples_;
+  Tuple left_tuple_;
+  int32_t right_tuple_idx_ = -1;
 };
 
 }  // namespace bustub

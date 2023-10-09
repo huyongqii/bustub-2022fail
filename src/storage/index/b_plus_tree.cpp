@@ -63,7 +63,7 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction) -> bool {
   root_page_id_latch_.RLock();
 
-  std::cout << "Get value, key: " << key << std::endl;
+  // std::cout << "Get value, key: " << key << std::endl;
 
   Page *page = FindLeaf(key);
   auto *leaf_page = reinterpret_cast<LeafPage *>(page->GetData());
@@ -93,7 +93,7 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transaction *transaction) -> bool {
   root_page_id_latch_.WLock();
 
-  std::cout << "Insert operation, Key: " << key.ToString() << ", value: " << value.GetSlotNum() << std::endl;
+  // std::cout << "Insert operation, Key: " << key.ToString() << ", value: " << value.GetSlotNum() << std::endl;
   if (IsEmpty()) {
     Page *new_page = buffer_pool_manager_->NewPage(&root_page_id_);
     if (new_page == nullptr) {
@@ -232,7 +232,7 @@ INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
   root_page_id_latch_.WLock();
 
-  std::cout << "Remove opearation, key: " << key.ToString() << std::endl;
+  // std::cout << "Remove opearation, key: " << key.ToString() << std::endl;
   if (IsEmpty()) {
     root_page_id_latch_.WUnlock();
     return;
@@ -421,6 +421,11 @@ auto BPLUSTREE_TYPE::Releaselatch(Transaction *transaction) -> void {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
+
+  if (root_page_id_ == INVALID_PAGE_ID) {
+    return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
+  }
+
   std::cout << "Get the begin of the plus tree." << std::endl;
 
   Page *root_page = buffer_pool_manager_->FetchPage(root_page_id_);
@@ -445,6 +450,10 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
+  if (root_page_id_ == INVALID_PAGE_ID) {
+    return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
+  }
+
   std::cout << "Get thr begin of the plus tree of specific key." << std::endl;
 
   Page *leaf_page = FindLeaf(key);
@@ -463,6 +472,10 @@ auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::End() -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
+
+  if (root_page_id_ == INVALID_PAGE_ID) {
+    return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
+  }
   std::cout << "Get thr end of plus tree." << std::endl;
 
   Page *root_page = buffer_pool_manager_->FetchPage(root_page_id_);

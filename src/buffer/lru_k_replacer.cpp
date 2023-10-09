@@ -24,7 +24,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
   if (curr_size_ == 0) {
     return false;
   }
-  LOG_INFO("Evict, frame_id = %d", static_cast<int>(*frame_id));
+  // LOG_INFO("Evict, frame_id = %d", static_cast<int>(*frame_id));
   *frame_id = -1;
   for (const auto &[k, v] : mp_) {
     if (v.enable_evit_) {
@@ -34,7 +34,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
     }
   }
   if (*frame_id != -1) {
-    LOG_INFO("Evict's frame_id = %d", static_cast<int>(*frame_id));
+    // LOG_INFO("Evict's frame_id = %d", static_cast<int>(*frame_id));
     mp_.erase(*frame_id);
     curr_size_--;
     return true;
@@ -44,7 +44,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
 
 void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
   std::scoped_lock<std::mutex> lock(latch_);
-  LOG_INFO("RecordAccess, frame_id = %d", static_cast<int>(frame_id));
+  // LOG_INFO("RecordAccess, frame_id = %d", static_cast<int>(frame_id));
   if (frame_id > static_cast<frame_id_t>(replacer_size_)) {
     throw std::exception();
   }
@@ -56,7 +56,7 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
   std::scoped_lock<std::mutex> lock(latch_);
-  LOG_INFO("SetEvictable, frame_id = %d", static_cast<int>(frame_id));
+  // LOG_INFO("SetEvictable, frame_id = %d", static_cast<int>(frame_id));
 
   if (frame_id > static_cast<frame_id_t>(replacer_size_)) {
     throw std::exception();
@@ -78,7 +78,7 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
 
 void LRUKReplacer::Remove(frame_id_t frame_id) {
   std::scoped_lock<std::mutex> lock(latch_);
-  LOG_INFO("Remove, frame_id = %d", static_cast<int>(frame_id));
+  // LOG_INFO("Remove, frame_id = %d", static_cast<int>(frame_id));
 
   if (mp_.count(frame_id) == 0) {
     return;
@@ -94,7 +94,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
 
 auto LRUKReplacer::Size() -> size_t {
   std::scoped_lock<std::mutex> lock(latch_);
-  LOG_INFO("curr_size_ = %d", static_cast<int>(curr_size_));
+  // LOG_INFO("curr_size_ = %d", static_cast<int>(curr_size_));
   return curr_size_;
 }
 
