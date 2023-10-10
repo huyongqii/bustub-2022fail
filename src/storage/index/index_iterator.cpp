@@ -18,9 +18,9 @@ INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm, LeafPage *leaf, int in
     : bpm_(bpm), leaf_(leaf), index_(index) {}
 
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::~IndexIterator() { 
-  if(leaf_ != nullptr) {
-    bpm_->UnpinPage(leaf_->GetPageId(), false); 
+INDEXITERATOR_TYPE::~IndexIterator() {
+  if (leaf_ != nullptr) {
+    bpm_->UnpinPage(leaf_->GetPageId(), false);
   }
 }  // NOLINT
 

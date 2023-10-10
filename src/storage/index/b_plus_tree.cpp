@@ -40,7 +40,7 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::FindLeaf(const KeyType &key) -> Page * {
   BUSTUB_ASSERT(root_page_id_ != INVALID_PAGE_ID, "Invalid root page id.");
 
-  LOG_INFO("FindLeaf, root_page_id_ = %d", root_page_id_);
+  // LOG_INFO("FindLeaf, root_page_id_ = %d", root_page_id_);
   Page *page = buffer_pool_manager_->FetchPage(root_page_id_);
   auto *tree_page = reinterpret_cast<BPlusTreePage *>(page->GetData());
   while (!tree_page->IsLeafPage()) {
@@ -69,7 +69,7 @@ auto BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result
   auto *leaf_page = reinterpret_cast<LeafPage *>(page->GetData());
   ValueType value;
   bool is_exist = leaf_page->LookUp(key, &value, comparator_);
-  LOG_INFO("GetValue, page_id : %d", page->GetPageId());
+  // LOG_INFO("GetValue, page_id : %d", page->GetPageId());
   buffer_pool_manager_->UnpinPage(leaf_page->GetPageId(), false);
   if (is_exist) {
     result->push_back(value);
@@ -148,7 +148,7 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transact
 
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Split(BPlusTreePage *page) -> BPlusTreePage * {
-  LOG_INFO(" Start to split, page_id = %d", page->GetPageId());
+  // LOG_INFO(" Start to split, page_id = %d", page->GetPageId());
 
   page_id_t page_id;
   Page *new_page = buffer_pool_manager_->NewPage(&page_id);
@@ -173,8 +173,8 @@ auto BPLUSTREE_TYPE::Split(BPlusTreePage *page) -> BPlusTreePage * {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::InsertToParent(BPlusTreePage *old_page, BPlusTreePage *split_page, const KeyType &split_key)
     -> void {
-  LOG_INFO(" Start to InsertToParent, old_page_id = %d, new_page_id = %d", old_page->GetPageId(),
-           split_page->GetPageId());
+  // LOG_INFO(" Start to InsertToParent, old_page_id = %d, new_page_id = %d", old_page->GetPageId(),
+  //          split_page->GetPageId());
 
   if (old_page->IsRootPage()) {
     std::cout << "Build a new root page" << std::endl;
@@ -423,6 +423,7 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
 
   if (root_page_id_ == INVALID_PAGE_ID) {
+    root_page_id_latch_.RUnlock();
     return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
   }
 
@@ -450,7 +451,9 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
+
   if (root_page_id_ == INVALID_PAGE_ID) {
+    root_page_id_latch_.RUnlock();
     return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
   }
 
@@ -474,19 +477,20 @@ auto BPLUSTREE_TYPE::End() -> INDEXITERATOR_TYPE {
   root_page_id_latch_.RLock();
 
   if (root_page_id_ == INVALID_PAGE_ID) {
+    root_page_id_latch_.RUnlock();
     return INDEXITERATOR_TYPE(nullptr, nullptr, 0);
   }
   std::cout << "Get thr end of plus tree." << std::endl;
 
   Page *root_page = buffer_pool_manager_->FetchPage(root_page_id_);
-  LOG_INFO("BPLUSTREE_TYPE::End(), root_page_id = %d", root_page->GetPageId());
+  // LOG_INFO("BPLUSTREE_TYPE::End(), root_page_id = %d", root_page->GetPageId());
   auto *tree_page = reinterpret_cast<BPlusTreePage *>(root_page->GetData());
   while (!tree_page->IsLeafPage()) {
     auto *internal_page = reinterpret_cast<InternalPage *>(tree_page);
     int index = internal_page->GetSize() - 1;
     page_id_t page_id = internal_page->ValueAt(index);
     tree_page = reinterpret_cast<BPlusTreePage *>(buffer_pool_manager_->FetchPage(page_id)->GetData());
-    LOG_INFO("BPLUSTREE_TYPE::End(), tree_page_id = %d", tree_page->GetPageId());
+    // LOG_INFO("BPLUSTREE_TYPE::End(), tree_page_id = %d", tree_page->GetPageId());
     buffer_pool_manager_->UnpinPage(page_id, false);
   }
   auto *leaf = reinterpret_cast<LeafPage *>(tree_page);
